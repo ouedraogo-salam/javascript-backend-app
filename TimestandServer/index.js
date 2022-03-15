@@ -11,11 +11,16 @@ let app = express();
 let Router = express.Router();
 
 let invalidMiddleware = function(req,res,next){
+    
     let {date} = req.params;
-    let dateValidation = new Date(date);
-    if(dateValidation=="Invalid Date"){
-        return res.json({error:"Invalid Date"});
+    if(isNaN(date)){
+        let dateValidation = new Date(date);
+
+        if(dateValidation=="Invalid Date"){
+            return res.json({error:"Invalid Date"});
+        }
     }
+    
     next();
     
 }
