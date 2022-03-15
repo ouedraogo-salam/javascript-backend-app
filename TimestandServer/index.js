@@ -10,11 +10,32 @@ let app = express();
 
 let Router = express.Router();
 
-Router.get('/api/:timestand',function(req,res){
+let invalidMiddleware = function(req,res,next){
+    let {date} = req.params;
+    let dateValidation = new Date(date);
+    if(dateValidation=="Invalid Date"){
+        return res.json({error:"Invalid Date"});
+    }
+    next();
     
-    let {timestand} = req.params;
+}
+
+let emptyMiddleware = function(req,res,next){
+    let {date} = req.params;
+
+    if(!date){
+        let apiTime = new Date();
+        return res.json({'unix':apiTime.valueOf(),"utc":apiTime.toUTCString()});
+    }
+    next();
+}
+
+
+Router.get('/api/:date?',emptyMiddleware,invalidMiddleware,function(req,res){
+    
+    let {date} = req.params;
    
-    let apiTime = new Date(+timestand);
+    let apiTime = new Date(+date);
     let finalDto = {'unix':apiTime.valueOf(),"utc":apiTime.toUTCString()};
     res.json(finalDto);
     
