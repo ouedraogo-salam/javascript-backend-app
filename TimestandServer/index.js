@@ -4,41 +4,44 @@ let app = express();
 
 let Router = express.Router();
 
-let invalidMiddleware = function(req,res,next){
-    
-    let {date} = req.params;
-    if(isNaN(date)){
-        let dateValidation = new Date(date);
+let invalidMiddleware = function(req, res, next) {
 
-        if(dateValidation=="Invalid Date"){
-            return res.json({error:"Invalid Date"});
-        }
+  let { date } = req.params;
+  if (isNaN(date)) {
+    let dateValidation = new Date(date);
+
+    if (dateValidation == "Invalid Date") {
+      return res.json({ error: "Invalid Date" });
+    } else {
+      let apiTime = new Date(date);
+
+      return res.json({ 'unix': apiTime.valueOf(), "utc": apiTime.toUTCString() });
     }
-    
-    next();
-    
+  }
+
+  next();
+
 }
 
-let emptyMiddleware = function(req,res,next){
-    let {date} = req.params;
+let emptyMiddleware = function(req, res, next) {
+  let { date } = req.params;
 
-    if(!date){
-        let apiTime = new Date();
-        return res.json({'unix':apiTime.valueOf(),"utc":apiTime.toUTCString()});
-    }
-    next();
+  if (!date) {
+    let apiTime = new Date();
+    return res.json({ 'unix': apiTime.valueOf(), "utc": apiTime.toUTCString() });
+  }
+  next();
 }
 
 
-Router.get('/api/:date?',emptyMiddleware,invalidMiddleware,function(req,res){
-    
-    let {date} = req.params;
-   
+Router.get('/api/:date?', emptyMiddleware, invalidMiddleware, function(req, res) {
+  let regex = /\d{5,}/
+  let { date } = req.params;
+  if (regex.test(date)) {
     let apiTime = new Date(+date);
-    let finalDto = {'unix':apiTime.valueOf(),"utc":apiTime.toUTCString()};
-    res.json(finalDto);
-    
-})
-
+    let finalDto = { 'unix': +date, "utc": apiTime.toUTCString() };
+    return res.json(finalDto);
+  }
+});
 
 module.exports = Router;
