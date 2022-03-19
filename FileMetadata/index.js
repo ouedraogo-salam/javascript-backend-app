@@ -2,41 +2,30 @@ const express = require('express');
 const ejs = require('ejs');
 const mongoose = require('mongoose');
 const path = require('path');
-const { Route } = require('express');
+const multer = require('multer');
 const app = express();
-const expressFileupload = require('express-fileupload')
 const Router = express.Router();
-const FileModel = require("./models/File");
-
-// let connexion = mongoose.createConnection("mongodb+srv://osalam:11QQWPEE31mxdSAR@cluster0.kqvok.mongodb.net/MetadataFile?retryWrites=true&w=majority")
-// let connexion = mongoose.createConnection("mongodb+srv://osalam:11QQWPEE31mxdSAR@cluster0.kqvok.mongodb.net/MetadataFile?retryWrites=true&w=majority")
+require('dotenv').config()
 
 
+// Router.get("/",function(req,res){
+//    return res.render("file-send");
+// })
 
-Router.use(expressFileupload())
+Router.get('/', function (req, res) {
+    res.sendFile(process.cwd() + '/views/index.html');
+});
 
-Router.get("/",function(req,res){
-   return res.render("file-send");
-})
+Router.post("/api/fileanalyse",multer().single("upfile"),function(req,res){
+    console.log("shake and bake")
 
-Router.post("/file/save",function(req,res){
-    let {upfile} = req.files;
-
-    upfile.mv(path.resolve(__dirname,"meta",upfile.name),function(error){
-       let fileSaveur = {
-        name:upfile.name,
-        type:upfile.mimetype,
-        size:upfile.size, 
-        path:path.join("meta",upfile.name)
-       }
-       FileModel.create(fileSaveur,function(error,file){
-           if(error) throw error;
-           return res.redirect('/file-metadata')
-       });
-    })
+   let responseObjet = {
+      size:req.file.size,
+      name:req.file.originalname,
+      type:req.file.mimetype
+     }
+       console.log(responseObjet);
+      return res.json(responseObjet);
     
 })
-
-
-mongoose.disconnect()
 module.exports = Router;
