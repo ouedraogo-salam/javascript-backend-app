@@ -8,8 +8,6 @@ const Router = express.Router();
  * 
  * nom de la base de données ExerciseTracker
  *******************************************************/
-mongoose.connect("mongodb+srv://osalam:11QQWPEE31mxdSAR@cluster0.kqvok.mongodb.net/ExerciseTracker?retryWrites=true&w=majority", { useNewUrlParser: true, useUnifiedTopology: true })
-
 
 /***********************************************************************
  * 
@@ -229,34 +227,12 @@ let optionalParams = function(req, res, next) {
 
 }
 
+
 Router.get('/api/users/:userId/logs', valideUserId, optionalParams,
   function(req, res) {
     let { userId } = req.params;
     detailHandler(userId, req, res);
-
-    // ExerciseModel.find({ userId })
-    //   .populate("userId")
-    //   .exec(function(error, exercisesData) {
-    //     let log = exercisesData.map(function(exercise) {
-    //       return {
-    //         description: exercise.description,
-    //         date: exercise.date.toDateString(),
-    //         duration: exercise.duration,
-    //       }
-    //     });
-
-    //     UserModel.findById(userId)
-    //       .exec(function(error, userData) {
-    //         let responseObject = {
-    //           username: userData.username,
-    //           _id: userData._id,
-    //           count: log.length,
-    //           log
-    //         }
-
-    //         return res.json(responseObject);
-    //       })
-    //   }
-    //   )
   })
-module.exports = Router;
+
+mongoose.disconnect()
+module.exports = Router; 
