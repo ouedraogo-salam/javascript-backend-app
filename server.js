@@ -50,15 +50,9 @@ app.use('/request-header-parser',RequestHeader);
  * 
  ************************************************************/
 const ExerciseTracker = require('./ExerciseTracker/index');
-app.use('/exercises-tracker',function(req,res,next){
-    mongoose.connect("mongodb+srv://osalam:11QQWPEE31mxdSAR@cluster0.kqvok.mongodb.net/ExerciseTracker?retryWrites=true&w=majority", { useNewUrlParser: true, useUnifiedTopology: true })
-    next()
-},ExerciseTracker);
+app.use('/exercises-tracker',ExerciseTracker);
 
 
 
 const FileMetadata = require('./FileMetadata/index');
-app.use('/file-metadata',function(req,res,next){
-    mongoose.connect("mongodb+srv://osalam:11QQWPEE31mxdSAR@cluster0.kqvok.mongodb.net/MetadataFile?retryWrites=true&w=majority", { useNewUrlParser: true, useUnifiedTopology: true })
-    next()
-},FileMetadata);
+app.use('/file-metadata',FileMetadata);

@@ -8,7 +8,7 @@ const Router = express.Router();
  * 
  * nom de la base de données ExerciseTracker
  *******************************************************/
-
+mongoose.connect("mongodb+srv://osalam:11QQWPEE31mxdSAR@cluster0.kqvok.mongodb.net/ExerciseTracker?retryWrites=true&w=majority", { useNewUrlParser: true, useUnifiedTopology: true })
 /***********************************************************************
  * 
  * Definition de la route /api/users
@@ -63,7 +63,7 @@ Router.route('/api/users/:userId/exercises')
           username: userData.username,
           _id: userData._id,
           description: exerciceData.description,
-          date: exerciceData.date.toDateString(),
+          date: new Date(exerciceData.date).toDateString(),
           duration: exerciceData.duration
         };
         return res.json(responseObject);
@@ -88,7 +88,7 @@ let detailHandler = (userId, req, res) => {
       let log = exercisesData.map(function(exercise) {
         return {
           description: exercise.description,
-          date: exercise.date.toDateString(),
+          date: new Date(exercise.date).toDateString(),
           duration: exercise.duration,
         }
       });
@@ -101,7 +101,6 @@ let detailHandler = (userId, req, res) => {
             count: log.length,
             log
           }
-
           return res.json(responseObject);
         })
     }
@@ -119,7 +118,7 @@ let optionalParams = function(req, res, next) {
         let log = exercisesData.map(function(exercise) {
           return {
             description: exercise.description,
-            date: exercise.date.toDateString(),
+            date: new Date(exercise.date).toDateString(),
             duration: exercise.duration,
           }
         });
@@ -132,7 +131,6 @@ let optionalParams = function(req, res, next) {
               count: log.length,
               log
             }
-
             return res.json(responseObject);
           })
       }
@@ -147,7 +145,7 @@ let optionalParams = function(req, res, next) {
         let log = exercisesData.map(function(exercise) {
           return {
             description: exercise.description,
-            date: exercise.date.toDateString(),
+            date: new Date(exercise.date).toDateString(),
             duration: exercise.duration,
           }
         });
@@ -160,7 +158,6 @@ let optionalParams = function(req, res, next) {
               count: log.length,
               log
             }
-
             return res.json(responseObject);
           })
       }
@@ -173,7 +170,7 @@ let optionalParams = function(req, res, next) {
         let log = exercisesData.map(function(exercise) {
           return {
             description: exercise.description,
-            date: exercise.date.toDateString(),
+            date: new Date(exercise.date).toDateString(),
             duration: exercise.duration,
           }
         });
@@ -186,7 +183,6 @@ let optionalParams = function(req, res, next) {
               count: log.length,
               log
             }
-
             return res.json(responseObject);
           })
       }
@@ -202,7 +198,7 @@ let optionalParams = function(req, res, next) {
         let log = exercisesData.map(function(exercise) {
           return {
             description: exercise.description,
-            date: exercise.date.toDateString(),
+            date: new Date(exercise.date).toDateString(),
             duration: exercise.duration,
           }
         });
@@ -215,7 +211,6 @@ let optionalParams = function(req, res, next) {
               count: log.length,
               log
             }
-
             return res.json(responseObject);
           })
       }
@@ -234,5 +229,4 @@ Router.get('/api/users/:userId/logs', valideUserId, optionalParams,
     detailHandler(userId, req, res);
   })
 
-mongoose.disconnect()
 module.exports = Router; 
