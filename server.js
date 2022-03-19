@@ -5,7 +5,7 @@
 
 var express = require('express');
 var app = express();
-
+const bodyParser = require('body-parser');
 /* ---------------------------------------------------------*/
 /* ------------ import the port storing in .env ------------*/
 /* --- whether the .env is not defined we set it to 4000 ---*/
@@ -18,6 +18,8 @@ app.listen(port);
 var cors = require('cors');
 app.use(cors({optionsSuccessStatus: 200}));  // some legacy browsers choke on 204
 
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({extended:true}))
 /**
  * we require the timestand microservice,
  */
@@ -31,3 +33,15 @@ app.enable("trust proxy");
 let result = app.get("trust proxy");
 
 app.use('/request-header-parser',RequestHeader);
+
+/************************************************************
+ * 
+ * Exercise Tracker Projet
+ * 
+ * Firstly required the index file from ExerciseTracker
+ * 
+ * and then use it with app.use
+ * 
+ ************************************************************/
+const ExerciseTracker = require('./ExerciseTracker/index');
+app.use('/exercises-tracker',ExerciseTracker);
