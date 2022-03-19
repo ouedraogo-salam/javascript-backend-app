@@ -8,7 +8,7 @@ const Router = express.Router();
  * 
  * nom de la base de données ExerciseTracker
  *******************************************************/
-mongoose.connect("mongodb+srv://osalam:11QQWPEE31mxdSAR@cluster0.kqvok.mongodb.net/ExerciseTracker?retryWrites=true&w=majority",{ useNewUrlParser: true, useUnifiedTopology: true })
+mongoose.connect("mongodb+srv://osalam:11QQWPEE31mxdSAR@cluster0.kqvok.mongodb.net/ExerciseTracker?retryWrites=true&w=majority", { useNewUrlParser: true, useUnifiedTopology: true })
 
 
 /***********************************************************************
@@ -22,17 +22,24 @@ mongoose.connect("mongodb+srv://osalam:11QQWPEE31mxdSAR@cluster0.kqvok.mongodb.n
  ************************************************************************/
 
 Router.route("/api/users")
-    .get(async function(req,res){
-        let userCollections =await UserModel.find({});
-        return res.json(userCollections);
-        
-    })
-    .post(async function(req,res){
-        await UserModel.create(req.body,function(error,dataUser){
-            if(error) throw error;
-            return res.json(dataUser);
-        });
+  .get(async function(req, res) {
+    let userCollections = await UserModel.find({})
+    let responseObjet = userCollections.map(function(user) {
+      return {
+        username: user.username,
+        _id: user._id
+      }
     });
+
+    return res.json(responseObjet);
+
+  })
+  .post(async function(req, res) {
+    await UserModel.create(req.body, function(error, dataUser) {
+      if (error) throw error;
+      return res.json(dataUser);
+    });
+  });
 
 
 /*************************************************************************
@@ -44,67 +51,212 @@ Router.route("/api/users")
  *************************************************************************/
 
 Router.route('/api/users/:userId/exercises')
-    .post(async function(req,res){
-        let {userId} = req.params;
+  .post(async function(req, res) {
+    let { userId } = req.params;
 
-        ExerciseModel.create({...req.body,userId:req.params.userId},function(error,exerciceData){
-            if(error) throw error;
-            
-            UserModel.findById(userId,function(error,userData){
+    ExerciseModel.create({ ...req.body, userId: req.params.userId }, function(error, exerciceData) {
+      if (error) throw error;
 
-                if(error) throw error;
+      UserModel.findById(userId, function(error, userData) {
 
-                let responseObject = {
-                    username:userData.username,
-                    _id:userData._id,
-                    description:exerciceData.description,
-                    date:exerciceData.date.toDateString(),
-                    duration:exerciceData.duration
-                };
-                return res.json(responseObject);
-            })
-            
+        if (error) throw error;
+
+        let responseObject = {
+          username: userData.username,
+          _id: userData._id,
+          description: exerciceData.description,
+          date: exerciceData.date.toDateString(),
+          duration: exerciceData.duration
+        };
+        return res.json(responseObject);
+      })
+
+    })
+  });
+
+
+let valideUserId = function(req, res, next) {
+  let { userId } = req.params;
+  UserModel.findById(userId)
+    .exec(function(error, userData) {
+      if (!userData) return res.json({});
+      next();
+    })
+}
+let detailHandler = (userId, req, res) => {
+  ExerciseModel.find({ userId })
+    .populate("userId")
+    .exec(function(error, exercisesData) {
+      let log = exercisesData.map(function(exercise) {
+        return {
+          description: exercise.description,
+          date: exercise.date.toDateString(),
+          duration: exercise.duration,
+        }
+      });
+
+      UserModel.findById(userId)
+        .exec(function(error, userData) {
+          let responseObject = {
+            username: userData.username,
+            _id: userData._id,
+            count: log.length,
+            log
+          }
+
+          return res.json(responseObject);
         })
-    });
+    }
+    )
+}
+let optionalParams = function(req, res, next) {
+
+  let { userId } = req.params;
+  let { limit, from, to } = req.query;
+  if (from && !limit && !to) {
+    ExerciseModel.find({ userId })
+      .where('date')
+      .gte(new Date(from))
+      .exec(function(error, exercisesData) {
+        let log = exercisesData.map(function(exercise) {
+          return {
+            description: exercise.description,
+            date: exercise.date.toDateString(),
+            duration: exercise.duration,
+          }
+        });
+
+        UserModel.findById(userId)
+          .exec(function(error, userData) {
+            let responseObject = {
+              username: userData.username,
+              _id: userData._id,
+              count: log.length,
+              log
+            }
+
+            return res.json(responseObject);
+          })
+      }
+      )
+
+  }else if(from && to && !limit){
+    ExerciseModel.find({ userId })
+      .where('date')
+      .gte(new Date(from))
+      .lte(new Date(to))
+      .exec(function(error, exercisesData) {
+        let log = exercisesData.map(function(exercise) {
+          return {
+            description: exercise.description,
+            date: exercise.date.toDateString(),
+            duration: exercise.duration,
+          }
+        });
+
+        UserModel.findById(userId)
+          .exec(function(error, userData) {
+            let responseObject = {
+              username: userData.username,
+              _id: userData._id,
+              count: log.length,
+              log
+            }
+
+            return res.json(responseObject);
+          })
+      }
+      )
+  } else if (!from && limit && !to) {
+
+    ExerciseModel.find({ userId })
+      .limit(limit)
+      .exec(function(error, exercisesData) {
+        let log = exercisesData.map(function(exercise) {
+          return {
+            description: exercise.description,
+            date: exercise.date.toDateString(),
+            duration: exercise.duration,
+          }
+        });
+
+        UserModel.findById(userId)
+          .exec(function(error, userData) {
+            let responseObject = {
+              username: userData.username,
+              _id: userData._id,
+              count: log.length,
+              log
+            }
+
+            return res.json(responseObject);
+          })
+      }
+      )
+    
+  } else if (limit && from && to) {
+  ExerciseModel.find({ userId })
+      .where('date')
+      .gte(new Date(from))
+      .lte(new Date(to))
+      .limit(limit)
+      .exec(function(error, exercisesData) {
+        let log = exercisesData.map(function(exercise) {
+          return {
+            description: exercise.description,
+            date: exercise.date.toDateString(),
+            duration: exercise.duration,
+          }
+        });
+
+        UserModel.findById(userId)
+          .exec(function(error, userData) {
+            let responseObject = {
+              username: userData.username,
+              _id: userData._id,
+              count: log.length,
+              log
+            }
+
+            return res.json(responseObject);
+          })
+      }
+      )
+  } else {
+    next()
+  }
 
 
-let valideUserId = function(req,res,next){
-    let {userId} = req.params;
-    UserModel.findById(userId)
-        .exec(function(error,userData){
-            if(!userData) return res.json({});
-            next();
-        })
 }
 
+Router.get('/api/users/:userId/logs', valideUserId, optionalParams,
+  function(req, res) {
+    let { userId } = req.params;
+    detailHandler(userId, req, res);
 
-Router.get('/api/users/:userId/logs',valideUserId,function(req,res){
-    let {userId} = req.params;
-    
+    // ExerciseModel.find({ userId })
+    //   .populate("userId")
+    //   .exec(function(error, exercisesData) {
+    //     let log = exercisesData.map(function(exercise) {
+    //       return {
+    //         description: exercise.description,
+    //         date: exercise.date.toDateString(),
+    //         duration: exercise.duration,
+    //       }
+    //     });
 
-    ExerciseModel.find({userId})
-        .populate("userId")
-        .exec(function(error,exercisesData){
-            let log =exercisesData.map(function(exercise){
-                return {
-                    description:exercise.description,
-                    date:exercise.date.toDateString(),
-                    duration:exercise.duration
-                }
-            });
-            
-            UserModel.findById(userId)
-                .exec(function(error,userData){
-                    let responseObject = {
-                        username:userData.username,
-                        _id:userData._id,
-                        count:log.length,
-                        log
-                    }
+    //     UserModel.findById(userId)
+    //       .exec(function(error, userData) {
+    //         let responseObject = {
+    //           username: userData.username,
+    //           _id: userData._id,
+    //           count: log.length,
+    //           log
+    //         }
 
-                    return res.json(responseObject);
-                })
-        }
-    )
-})
+    //         return res.json(responseObject);
+    //       })
+    //   }
+    //   )
+  })
 module.exports = Router;
